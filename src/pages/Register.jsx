@@ -62,7 +62,7 @@ export default function Register() {
 
       } catch (err) {
         console.error(err);
-        toast.error("Registration Failed ❌");
+        toast.error(err.response?.data?.message || "Registration Failed");
       }
     } else {
       toast.error("Please fix form errors");
@@ -168,7 +168,9 @@ export default function Register() {
             <option value="">Department</option>
             <option>Computer Science</option>
             <option>Mechanical</option>
-            <option>Civil</option>
+            <option>Electronics</option>
+            <option>Mathematics</option>
+            <option>Information Technology</option>
           </select>
           <p className="text-red-500 text-xs">{errors.dept}</p>
 
@@ -180,9 +182,10 @@ export default function Register() {
             className="w-full border p-3 rounded-xl"
           >
             <option value="">Year</option>
-            <option>1st</option>
-            <option>2nd</option>
-            <option>3rd</option>
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>``
           </select>
           <p className="text-red-500 text-xs">{errors.year}</p>
 
