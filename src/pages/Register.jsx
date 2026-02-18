@@ -3,6 +3,7 @@ import { Eye, EyeOff, GraduationCap } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { validateRegister } from "../utils/validators.js";
+import axios from "axios";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -23,32 +24,46 @@ export default function Register() {
 
   const [errors, setErrors] = useState({});
 
-  // Dummy Existing Users (Demo Purpose)
-  const existingUsers = [
-    { email: "test@gmail.com", phone: "9876543210" },
-    { email: "admin@gmail.com", phone: "9999999999" },
-  ];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const errorsObj = validateRegister(form, existingUsers);
+    const errorsObj = validateRegister(form, []);
     setErrors(errorsObj);
 
     if (Object.keys(errorsObj).length === 0) {
-      toast.success("Registration Successful 🎓 Redirecting...");
-      setForm({
-        name: "",
-        username: "",
-        email: "",
-        phone: "",
-        password: "",
-        confirm: "",
-        dept: "",
-        year: "",
-      });
+      try {
+        const res = await axios.post(
+          "http://localhost:8080/api/v1/student/register",
+          {
+            name: form.name,
+            username: form.username,
+            email: form.email,
+            phone: form.phone,
+            password: form.password,
+            dept: form.dept,
+            year: form.year,
+          }
+        );
 
-      setTimeout(() => navigate("/"), 1800);
+        toast.success("Registration Successful 🎓");
+
+        setForm({
+          name: "",
+          username: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirm: "",
+          dept: "",
+          year: "",
+        });
+
+        setTimeout(() => navigate("/"), 1500);
+
+      } catch (err) {
+        console.error(err);
+        toast.error("Registration Failed ❌");
+      }
     } else {
       toast.error("Please fix form errors");
     }
@@ -92,13 +107,13 @@ export default function Register() {
             Student Registration
           </h1>
 
-          {["name","username","email","phone"].map(field => (
+          {["name", "username", "email", "phone"].map((field) => (
             <div key={field}>
               <input
                 name={field}
                 value={form[field]}
                 onChange={handleChange}
-                placeholder={field.charAt(0).toUpperCase()+field.slice(1)}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
                 className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-indigo-500"
               />
               <p className="text-red-500 text-xs">{errors[field]}</p>
@@ -115,14 +130,16 @@ export default function Register() {
               placeholder="Password"
               className="w-full border p-3 rounded-xl pr-10 focus:ring-2 focus:ring-indigo-500"
             />
-            <span onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-3 cursor-pointer">
-              {showPass ? <EyeOff size={18}/> : <Eye size={18}/>}
+            <span
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-3 top-3 cursor-pointer"
+            >
+              {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
             </span>
             <p className="text-red-500 text-xs">{errors.password}</p>
           </div>
 
-          {/* CONFIRM */}
+          {/* CONFIRM PASSWORD */}
           <div className="relative">
             <input
               type={showConfirm ? "text" : "password"}
@@ -132,15 +149,22 @@ export default function Register() {
               placeholder="Confirm Password"
               className="w-full border p-3 rounded-xl pr-10 focus:ring-2 focus:ring-indigo-500"
             />
-            <span onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-3 cursor-pointer">
-              {showConfirm ? <EyeOff size={18}/> : <Eye size={18}/>}
+            <span
+              onClick={() => setShowConfirm(!showConfirm)}
+              className="absolute right-3 top-3 cursor-pointer"
+            >
+              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
             </span>
             <p className="text-red-500 text-xs">{errors.confirm}</p>
           </div>
 
-          <select name="dept" value={form.dept} onChange={handleChange}
-            className="w-full border p-3 rounded-xl">
+          {/* DEPARTMENT */}
+          <select
+            name="dept"
+            value={form.dept}
+            onChange={handleChange}
+            className="w-full border p-3 rounded-xl"
+          >
             <option value="">Department</option>
             <option>Computer Science</option>
             <option>Mechanical</option>
@@ -148,8 +172,13 @@ export default function Register() {
           </select>
           <p className="text-red-500 text-xs">{errors.dept}</p>
 
-          <select name="year" value={form.year} onChange={handleChange}
-            className="w-full border p-3 rounded-xl">
+          {/* YEAR */}
+          <select
+            name="year"
+            value={form.year}
+            onChange={handleChange}
+            className="w-full border p-3 rounded-xl"
+          >
             <option value="">Year</option>
             <option>1st</option>
             <option>2nd</option>
