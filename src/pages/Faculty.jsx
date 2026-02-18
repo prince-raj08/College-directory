@@ -1,4 +1,4 @@
-export default function Faculty() {
+const Faculty=()=> {
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Faculty</h2>
@@ -6,3 +6,4 @@ export default function Faculty() {
     </div>
   );
 }
+export default Faculty
