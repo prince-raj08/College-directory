@@ -20,6 +20,7 @@ export default function Register() {
     confirm: "",
     dept: "",
     year: "",
+    profilePic: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -32,16 +33,24 @@ export default function Register() {
 
     if (Object.keys(errorsObj).length === 0) {
       try {
-        const res = await axios.post(
+        const formData = new FormData();
+
+        formData.append("name", form.name);
+        formData.append("username", form.username);
+        formData.append("email", form.email);
+        formData.append("phone", form.phone);
+        formData.append("password", form.password);
+        formData.append("dept", form.dept);
+        formData.append("year", form.year);
+        formData.append("profilePic", form.profilePic);
+
+        await axios.post(
           "http://localhost:8080/api/v1/student/register",
+          formData,
           {
-            name: form.name,
-            username: form.username,
-            email: form.email,
-            phone: form.phone,
-            password: form.password,
-            dept: form.dept,
-            year: form.year,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
           }
         );
 
@@ -56,10 +65,10 @@ export default function Register() {
           confirm: "",
           dept: "",
           year: "",
+          profilePic: null,
         });
 
         setTimeout(() => navigate("/"), 1500);
-
       } catch (err) {
         console.error(err);
         toast.error(err.response?.data?.message || "Registration Failed");
@@ -120,6 +129,40 @@ export default function Register() {
             </div>
           ))}
 
+          {/* PROFILE PICTURE */}
+          <div>
+            <input
+              type="file"
+              name="profilePic"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+
+                if (!file) {
+                  setErrors({ ...errors, profilePic: "Profile picture is required" });
+                  return;
+                }
+
+                const sizeInKB = file.size / 1024;
+
+                if (sizeInKB < 30) {
+                  setErrors({ ...errors, profilePic: "Image must be at least 30KB" });
+                  return;
+                }
+
+                if (sizeInKB > 500) {
+                  setErrors({ ...errors, profilePic: "Image must not exceed 500KB" });
+                  return;
+                }
+
+                setErrors({ ...errors, profilePic: "" });
+                setForm({ ...form, profilePic: file });
+              }}
+              className="w-full border p-3 rounded-xl bg-white"
+            />
+            <p className="text-red-500 text-xs">{errors.profilePic}</p>
+          </div>
+
           {/* PASSWORD */}
           <div className="relative">
             <input
@@ -171,6 +214,7 @@ export default function Register() {
             <option>Electronics</option>
             <option>Mathematics</option>
             <option>Information Technology</option>
+            <option>Civil</option>
           </select>
           <p className="text-red-500 text-xs">{errors.dept}</p>
 
@@ -185,7 +229,7 @@ export default function Register() {
             <option>1st Year</option>
             <option>2nd Year</option>
             <option>3rd Year</option>
-            <option>4th Year</option>``
+            <option>4th Year</option>
           </select>
           <p className="text-red-500 text-xs">{errors.year}</p>
 
