@@ -79,10 +79,13 @@ export default function Login() {
   // --- FINAL FIXED LOGIN HANDLER ---
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Formatting role: "FACULTY_MEMBER" -> "faculty-member"
     const rolePath = form.role.toLowerCase().replace('_', '-');
     let apiUrl = `http://localhost:8080/api/v1/${rolePath}/login`;
 
     const loadToast = toast.loading("Authenticating...");
+    
     try {
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -90,6 +93,7 @@ export default function Login() {
         body: JSON.stringify({ email: form.email, password: form.password }),
       });
 
+      // Response text handle kar rahe hain in case JSON empty ho
       const data = await response.json();
 
       if (!response.ok) {
@@ -97,30 +101,35 @@ export default function Login() {
         return toast.error(data.message || "Invalid Credentials");
       }
 
-      // 1. Get ID (Backend case-sensitivity handle)
-      const userId = data.id || data.Id;
-      
-      if (!userId) {
+      // Check if ID exists (Backend uses capital 'Id')
+      if (!data.Id && !data.id) {
         toast.dismiss(loadToast);
-        return toast.error("Login failed: User identity not received");
+        return toast.error("Invalid server response: No User ID");
       }
 
-      // 2. Save to SessionStorage
-      sessionStorage.setItem("user", JSON.stringify({ id: userId, role: form.role }));
+      // Pure response ko store kar rahe hain taaki dashboard par name/email mil sake
+      const userData = { ...data, role: form.role };
+      sessionStorage.setItem("user", JSON.stringify(userData));
       
-      toast.success("Login Successful", { id: loadToast });
+      toast.success(`Welcome back, ${data.name || 'User'}!`, { id: loadToast });
 
-      // 3. FIXED NAVIGATION: Exact match with App.jsx Routes
-      if (form.role === "STUDENT") {
-        navigate("/students"); // Plural match: App.jsx path="/students"
-      } else if (form.role === "FACULTY_MEMBER") {
-        navigate("/faculty");  // Match: App.jsx path="/faculty"
-      } else {
-        navigate("/"); 
-      }
+      // Small delay for toast visibility before navigating
+      setTimeout(() => {
+        const userRole = form.role.toUpperCase();
+        if (userRole === "STUDENT") {
+          navigate("/students");
+        } else if (userRole === "FACULTY_MEMBER") {
+          navigate("/faculty");
+        } else if (userRole === "ADMINISTRATOR") {
+          navigate("/admin");  
+        } else {
+          navigate("/"); 
+        }
+      }, 500);
 
     } catch (error) {
-      toast.error("Server Error", { id: loadToast });
+      toast.error("Connection Refused. Is backend running?", { id: loadToast });
+      console.error("Login error:", error);
     }
   };
 

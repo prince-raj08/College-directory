@@ -3,7 +3,7 @@ import { Toaster } from "react-hot-toast";
 
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
-
+import Admin from "./pages/Admin";
 import Home from "./pages/Home";
 import Students from "./pages/Students";
 import Faculty from "./pages/Faculty";
@@ -12,7 +12,7 @@ import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 
 /* ===============================
-   Protected Route
+    🛡️ Protected Route Logic
 =================================*/
 function ProtectedRoute({ children, role }) {
   const storedUser = sessionStorage.getItem("user");
@@ -23,7 +23,7 @@ function ProtectedRoute({ children, role }) {
 
   const user = JSON.parse(storedUser);
 
-  // Case-insensitive role check
+  // FIXED: Role strings must match exactly
   if (
     role &&
     user.role &&
@@ -37,38 +37,51 @@ function ProtectedRoute({ children, role }) {
 
 export default function App() {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <Toaster position="top-center" />
+      <Toaster position="top-center" reverseOrder={false} />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/students"
-          element={
-            <ProtectedRoute role="STUDENT">
-              <Students />
-            </ProtectedRoute>
-          }
-        />
+          {/* 🎓 Protected Student Route */}
+          <Route
+            path="/students"
+            element={
+              <ProtectedRoute role="STUDENT">
+                <Students />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/faculty"
-          element={
-            <ProtectedRoute role="FACULTY_MEMBER">
-              <Faculty />
-            </ProtectedRoute>
-          }
-        />
+          {/* 👨‍🏫 Protected Faculty Route */}
+          <Route
+            path="/faculty"
+            element={
+              <ProtectedRoute role="FACULTY_MEMBER">
+                <Faculty />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+          {/* ⚙️ Protected Admin Route - FIXED ROLE NAME */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="ADMINISTRATOR">
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
 
       <Footer />
-    </>
+    </div>
   );
 }
